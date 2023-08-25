@@ -1,0 +1,9 @@
+appdirs==1.4.4
+deserialize==2.0.1
+docopt==0.6.2
+iniconfig==2.0.0
+openstep-parser==1.5.4
+packaging==23.1
+pbxproj==3.5.0
+pluggy==1.2.0
+pytest==7.4.0
