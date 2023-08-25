@@ -2,7 +2,7 @@ import os.path
 import plistlib
 from typing import List, Dict
 
-from pbxproj import XcodeProject, PBXGenericTarget, PBXGenericObject
+from pbxproj import XcodeProject, PBXGenericTarget, PBXGenericObject, XCBuildConfiguration
 
 from xcproj_resign_app.utils_path import relative_to_absolute_path
 from xcproj_resign_app.utils_pbxproj import get_full_pbx_file_reference_path
@@ -61,6 +61,20 @@ class XcProject:
         else:
             return relative_to_absolute_path(relative_path, self.project_directory)
 
+    def target_configurations(self, target_name: str) -> List[XCBuildConfiguration]:
+        target = next(filter(lambda x: x.name == target_name, self.targets))
+        result = list()
+
+        if target.buildConfigurationList is None:
+            return result
+
+        configurations = self.objects[target.buildConfigurationList]
+        for configuration in configurations.buildConfigurations:
+            config = self.objects[configuration]
+            result.append(config)
+
+        return result
+
     def target_configuration(self, target_name: str, configuration_name: str = 'Release') -> Dict[str, str]:
         target = next(filter(lambda x: x.name == target_name, self.targets))
         configurations = self.project.objects[target.buildConfigurationList]
@@ -89,9 +103,11 @@ class XcProject:
 
         return result
 
-    def target_entitlements(self, target_name: str, configuration_name: str = 'Release'):
+    def target_entitlements(self, target_name: str, configuration_name: str = 'Release') -> Dict[str, str]:
         config = self.target_configuration(target_name, configuration_name)
-        entitlements_file = config['CODE_SIGN_ENTITLEMENTS']
+        entitlements_file = config.get('CODE_SIGN_ENTITLEMENTS', None)
+        if entitlements_file is None:
+            return dict()
 
         ef = open(self.project_file_path(entitlements_file), "r+b")
         try:
