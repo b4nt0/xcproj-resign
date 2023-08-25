@@ -1,5 +1,5 @@
 from tests.test_utils import sample_file_path
-from xcproj_resign_app.xcproject import XcProject
+from xcproj_resources.xcproject import XcProject
 
 
 def test_read_project_settings_rendered():

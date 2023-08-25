@@ -6,9 +6,9 @@ from pbxproj.PBXKey import PBXKey
 
 from test_utils import sample_file_path
 
-from xcproj_resign_app.utils_pbxproj import get_full_pbx_file_reference_path
-from xcproj_resign_app.xcconfig import XcConfig
-from xcproj_resign_app.xcproject import XcProject
+from xcproj_resources.utils_pbxproj import get_full_pbx_file_reference_path
+from xcproj_resources.xcconfig import XcConfig
+from xcproj_resources.xcproject import XcProject
 
 
 def test_read_project():

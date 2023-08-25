@@ -4,9 +4,9 @@ from typing import List, Dict
 
 from pbxproj import XcodeProject, PBXGenericTarget, PBXGenericObject, XCBuildConfiguration
 
-from xcproj_resign_app.utils_path import relative_to_absolute_path
-from xcproj_resign_app.utils_pbxproj import get_full_pbx_file_reference_path
-from xcproj_resign_app.xcconfig import XcConfig
+from xcproj_resources.utils_path import relative_to_absolute_path
+from xcproj_resources.utils_pbxproj import get_full_pbx_file_reference_path
+from xcproj_resources.xcconfig import XcConfig
 
 
 class XcProject:
