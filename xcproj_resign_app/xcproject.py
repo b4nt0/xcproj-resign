@@ -54,6 +54,9 @@ class XcProject:
     def targets(self) -> List[PBXGenericTarget]:
         return self.project.objects.get_targets(None)
 
+    def project_file_path(self, relative_path: str) -> str:
+        return relative_to_absolute_path(relative_path, relative_to_absolute_path('..', self.project_directory))
+
     def target_configuration(self, target_name: str, configuration_name: str = 'Release') -> Dict[str, str]:
         target = next(filter(lambda x: x.name == target_name, self.targets))
         configurations = self.project.objects[target.buildConfigurationList]
@@ -65,7 +68,7 @@ class XcProject:
         if configuration.baseConfigurationReference is not None:
             configuration_file_reference = self.project.objects[configuration.baseConfigurationReference]
             configuration_file_path = get_full_pbx_file_reference_path(configuration_file_reference)
-            full_configuration_file_path = relative_to_absolute_path(configuration_file_path, relative_to_absolute_path('..', self.project_directory))
+            full_configuration_file_path = self.project_file_path(configuration_file_path)
             base_configuration = XcConfig(filename=full_configuration_file_path)
             result = base_configuration.values.copy()
 
