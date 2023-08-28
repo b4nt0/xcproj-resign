@@ -86,3 +86,9 @@ def test_read_project_settings_rendered():
     entitlements = project.target_entitlements('Wire-iOS', 'Release')
     assert len(entitlements) == 10
     assert entitlements['com.apple.developer.ubiquity-kvstore-identifier'] == '$(TeamIdentifierPrefix)$(CFBundleIdentifier)'
+
+
+def test_refer_to_xcodeproj():
+    project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS.xcodeproj"))
+    config = project.target_configuration('Wire-iOS', 'Release')
+    assert config['PRODUCT_BUNDLE_IDENTIFIER'] == 'com.wearezeta.zclient.ios'

@@ -25,6 +25,9 @@ class XcProject:
 
     @filename.setter
     def filename(self, value: str):
+        if value.endswith('xcodeproj'):
+            value = os.path.join(value, 'project.pbxproj')
+
         self._filename = value
         file_path = os.path.dirname(self._filename)
         self.project_directory = relative_to_absolute_path('..', file_path)
