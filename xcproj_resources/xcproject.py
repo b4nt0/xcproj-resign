@@ -55,11 +55,8 @@ class XcProject:
     def targets(self) -> List[PBXGenericTarget]:
         return self.project.objects.get_targets(None)
 
-    def project_file_path(self, relative_path: str, from_parent: bool = True) -> str:
-        if from_parent:
-            return relative_to_absolute_path(relative_path, relative_to_absolute_path('..', self.project_directory))
-        else:
-            return relative_to_absolute_path(relative_path, self.project_directory)
+    def project_file_path(self, relative_path: str) -> str:
+        return relative_to_absolute_path(relative_path, self.project_directory)
 
     def target_configurations(self, target_name: str) -> List[XCBuildConfiguration]:
         target = next(filter(lambda x: x.name == target_name, self.targets))

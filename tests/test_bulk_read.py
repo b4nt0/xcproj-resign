@@ -3,7 +3,7 @@ from xcproj_resources.xcproject import XcProject
 
 
 def test_read_project_settings_rendered():
-    project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
+    project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
     targets = project.targets
 
     for target in targets:

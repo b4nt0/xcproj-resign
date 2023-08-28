@@ -12,7 +12,7 @@ from xcproj_resources.xcproject import XcProject
 
 
 def test_read_project():
-    project = XcodeProject.load(sample_file_path("Wire-iOS/Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
+    project = XcodeProject.load(sample_file_path("Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
     assert project is not None
 
     assert isinstance(project.rootObject, PBXKey)
@@ -50,7 +50,7 @@ def test_read_project():
 
 
 def test_read_target_settings():
-    project = XcodeProject.load(sample_file_path("Wire-iOS/Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
+    project = XcodeProject.load(sample_file_path("Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
     assert project is not None
 
     targets = project.objects.get_targets(None)
@@ -79,7 +79,7 @@ def test_read_target_settings():
 
 
 def test_read_project_settings_rendered():
-    project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
+    project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
     config = project.target_configuration('Wire-iOS', 'Release')
     assert config['PRODUCT_BUNDLE_IDENTIFIER'] == 'com.wearezeta.zclient.ios'
     assert config['CODE_SIGN_ENTITLEMENTS'] == 'Wire-iOS/Entitlements-Prod.entitlements'
