@@ -18,7 +18,7 @@ What it means is that the tool:
     ap.add_argument('pbxproj_file', help='path to the .pbxproj file or to the .xcodeproj directory')
     ap.add_argument('--bundleprefix', help='rename all bundles to force a certain bundle prefix', required=False)
     ap.add_argument('--team', help='signing team identifier', required=False)
-    ap.add_argument('--config', default='Release', help='configuration name (Release is the default)')
+    ap.add_argument('--config', default='*', help='configuration name (All configurations is the default)')
     ap.add_argument('--fastlanescript', help='fastlane script file name', required=False)
     ap.add_argument('--bundle_template', default='./.xcproj_resign/create-bundle-template.sh', help='fastlane tempalte to create a bundle')
 
@@ -39,38 +39,71 @@ What it means is that the tool:
     used_bundle_ids = list()
     for target in targets:
         print(f'Target {target.name}')
-        config = project.target_configuration(target.name, args.config)
-        print(f"..Bundle {config['PRODUCT_BUNDLE_IDENTIFIER']}")
 
-        if args.bundleprefix is not None:
-            # Rename the bundle through adding prefix
-            bundle_id_components = config['PRODUCT_BUNDLE_IDENTIFIER'].split('.')
-            last_bundle_id_component = bundle_id_components[-1]
+        configurations = project.target_configurations(target.name)
 
-            # Eliminate variables
-            if last_bundle_id_component.startswith('$('):
-                last_bundle_id_component = random_string()
+        bundle_id_for_target = None
+        if target.productType == 'com.apple.product-type.application':
+            # First try to assign the simplest name
+            if args.bundleprefix and args.bundleprefix not in used_bundle_ids:
+                bundle_id_for_target = args.bundleprefix
 
-            # Try bundle ID candidates until one fits
-            new_bundle_id = f'{args.bundleprefix}.{last_bundle_id_component}'
-            attempt = 1
-            while new_bundle_id in used_bundle_ids:
-                new_bundle_id = f'{args.bundleprefix}.{last_bundle_id_component}{attempt}'
-                attempt += 1
+        elif target.productType in ['com.apple.product-type.bundle.unit-test']:
+            continue
 
-            used_bundle_ids.append(new_bundle_id)
-            project.set_target_configuration(target.name, args.config, 'PRODUCT_BUNDLE_IDENTIFIER', new_bundle_id)
 
-            print(f"...set to {new_bundle_id}")
+        for configuration in configurations:
+            if args.config != '*' and configuration.name != args.config:
+                continue
+
+            config = project.target_configuration(target.name, configuration.name)
+            print(f"..Bundle {config['PRODUCT_BUNDLE_IDENTIFIER']}")
+
+            if args.bundleprefix is not None:
+                current_bundle_identifier = config['PRODUCT_BUNDLE_IDENTIFIER']
+                if not current_bundle_identifier.startswith(args.bundleprefix):
+                    if bundle_id_for_target is not None:
+                        new_bundle_id = bundle_id_for_target
+
+                    else:
+                        # Rename the bundle through adding prefix
+                        bundle_id_components = current_bundle_identifier.split('.')
+                        last_bundle_id_component = bundle_id_components[-1]
+
+                        # Eliminate variables
+                        if last_bundle_id_component.startswith('$('):
+                            last_bundle_id_component = random_string()
+
+                        # Try bundle ID candidates until one fits
+                        new_bundle_id = f'{args.bundleprefix}.{last_bundle_id_component}'
+                        attempt = 1
+                        while new_bundle_id in used_bundle_ids:
+                            new_bundle_id = f'{args.bundleprefix}.{last_bundle_id_component}{attempt}'
+                            attempt += 1
+
+                        used_bundle_ids.append(new_bundle_id)
+                        bundle_id_for_target = new_bundle_id
+
+                    project.set_target_configuration(target.name, configuration.name, 'PRODUCT_BUNDLE_IDENTIFIER', new_bundle_id)
+                    print(f"...set to {new_bundle_id}")
+
+                else:
+                    print(f"...the bundle ID is already good, keeping as is")
+                    bundle_id_for_target = current_bundle_identifier
+                    used_bundle_ids.append(current_bundle_identifier)
 
             if args.team:
                 print(f'...setting signing information to team {args.team}')
 
-                project.set_target_configuration(target.name, args.config, 'CODE_SIGN_IDENTITY', 'iPhone Developer')
-                project.set_target_configuration(target.name, args.config, 'CODE_SIGN_STYLE', 'Automatic')
-                project.set_target_configuration(target.name, args.config, 'DEVELOPMENT_TEAM', args.team)
-                project.set_target_configuration(target.name, args.config, 'PROVISIONING_PROFILE', '')
-                project.set_target_configuration(target.name, args.config, 'PROVISIONING_PROFILE_SPECIFIER', '')
+                project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_IDENTITY', 'iPhone Developer')
+                project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_STYLE', 'Automatic')
+                project.set_target_configuration(target.name, configuration.name, 'DEVELOPMENT_TEAM', args.team)
+                project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE', '')
+                project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE_SPECIFIER', '')
+
+    if args.team or args.bundleprefix:
+        print(f'Saving {project.xcodeproj}')
+        project.save()
 
     if args.fastlanescript:
         print('Writing out a fastlane script')
@@ -82,6 +115,8 @@ What it means is that the tool:
                 bundle_line = bundle_template_script.replace('<bundle_id>', bundle)
                 fastlane_script_file.write(bundle_line + '\n')
                 print(f'..{bundle_line}')
+
+        os.chmod(args.fastlanescript, 0o755)
 
 
 if __name__ == "__main__":
