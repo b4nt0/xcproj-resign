@@ -92,3 +92,12 @@ def test_refer_to_xcodeproj():
     project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS.xcodeproj"))
     config = project.target_configuration('Wire-iOS', 'Release')
     assert config['PRODUCT_BUNDLE_IDENTIFIER'] == 'com.wearezeta.zclient.ios'
+
+
+def test_set_configuration_setting():
+    project = XcProject(filename=sample_file_path("Wire-iOS/Wire-iOS.xcodeproj/project.pbxproj"))
+    config = project.target_configuration('Wire-iOS', 'Release')
+    assert config['PRODUCT_BUNDLE_IDENTIFIER'] == 'com.wearezeta.zclient.ios'
+    project.set_target_configuration('Wire-iOS', 'Release', 'PRODUCT_BUNDLE_IDENTIFIER', 'com.test.dummy')
+    config = project.target_configuration('Wire-iOS', 'Release')
+    assert config['PRODUCT_BUNDLE_IDENTIFIER'] == 'com.test.dummy'

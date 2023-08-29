@@ -25,7 +25,7 @@ class XcProject:
 
     @filename.setter
     def filename(self, value: str):
-        if value.endswith('xcodeproj'):
+        if value.endswith('.xcodeproj'):
             value = os.path.join(value, 'project.pbxproj')
 
         self._filename = value
@@ -102,6 +102,12 @@ class XcProject:
                 result[setting_key] = XcConfig.render_variables_from(setting, result)
 
         return result
+
+    def set_target_configuration(self, target_name: str, configuration_name: str, key: str, value: str):
+        target = next(filter(lambda x: x.name == target_name, self.targets))
+        configurations = self.project.objects[target.buildConfigurationList]
+        configuration = self.project.objects[next(filter(lambda c: c._get_comment() == configuration_name, configurations.buildConfigurations))]
+        configuration.buildSettings[key] = value
 
     def target_entitlements(self, target_name: str, configuration_name: str = 'Release') -> Dict[str, str]:
         config = self.target_configuration(target_name, configuration_name)
