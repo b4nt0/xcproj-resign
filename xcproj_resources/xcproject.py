@@ -1,11 +1,15 @@
 import os.path
 import plistlib
+import shutil
+from datetime import datetime
+from time import strftime
 from typing import List, Dict
 
 from pbxproj import XcodeProject, PBXGenericTarget, PBXGenericObject, XCBuildConfiguration
 
 from xcproj_resources.utils_path import relative_to_absolute_path
 from xcproj_resources.utils_pbxproj import get_full_pbx_file_reference_path
+from xcproj_resources.utils_string import random_string
 from xcproj_resources.xcconfig import XcConfig
 
 
@@ -14,6 +18,7 @@ class XcProject:
         super(XcProject, self).__init__()
 
         self.project = None
+        self.backup = True
 
         self.filename = kwargs.pop('filename', None)
         if self.filename is not None:
@@ -31,6 +36,14 @@ class XcProject:
         self._filename = value
         file_path = os.path.dirname(self._filename)
         self.project_directory = relative_to_absolute_path('..', file_path)
+        self.xcodeproj = file_path
+
+    def save(self):
+        if self.backup:
+            backup_name = os.path.join(self.xcodeproj, f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.{random_string()}.backup.pbxproj")
+            shutil.copy(self.filename, backup_name)
+
+        self.project.save()
 
     @property
     def project(self) -> XcodeProject:
@@ -83,7 +96,7 @@ class XcProject:
         result = dict()
 
         # Load a base configuration
-        if configuration.baseConfigurationReference is not None:
+        if getattr(configuration, 'baseConfigurationReference', None) is not None:
             configuration_file_reference = self.project.objects[configuration.baseConfigurationReference]
             configuration_file_path = get_full_pbx_file_reference_path(configuration_file_reference)
             full_configuration_file_path = self.project_file_path(configuration_file_path)
