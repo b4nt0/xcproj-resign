@@ -4,7 +4,7 @@ from pbxproj import XcodeProject, PBXGenericObject, PBXNativeTarget, XCConfigura
     PBXFileReference
 from pbxproj.PBXKey import PBXKey
 
-from test_utils import sample_file_path
+from .test_utils import sample_file_path
 
 from xcproj_resources.utils_pbxproj import get_full_pbx_file_reference_path
 from xcproj_resources.xcconfig import XcConfig

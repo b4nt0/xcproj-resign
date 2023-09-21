@@ -1,4 +1,4 @@
-from tests.test_utils import sample_file_path
+from .test_utils import sample_file_path
 from xcproj_resources.xcproject import XcProject
 
 
