@@ -51,7 +51,6 @@ What it means is that the tool:
         elif target.productType in ['com.apple.product-type.bundle.unit-test']:
             continue
 
-
         for configuration in configurations:
             if args.config != '*' and configuration.name != args.config:
                 continue
@@ -93,13 +92,20 @@ What it means is that the tool:
                     used_bundle_ids.append(current_bundle_identifier)
 
             if args.team:
-                print(f'...setting signing information to team {args.team}')
+                if args.team.lower() != 'none':
+                    print(f'...setting signing information to team {args.team}')
+                    project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_IDENTITY', 'iPhone Developer')
+                    project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_STYLE', 'Automatic')
+                    project.set_target_configuration(target.name, configuration.name, 'DEVELOPMENT_TEAM', args.team)
+                    project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE', '')
+                    project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE_SPECIFIER', '')
 
-                project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_IDENTITY', 'iPhone Developer')
-                project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_STYLE', 'Automatic')
-                project.set_target_configuration(target.name, configuration.name, 'DEVELOPMENT_TEAM', args.team)
-                project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE', '')
-                project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE_SPECIFIER', '')
+                else:
+                    print(f'...removing the signing identity')
+                    project.set_target_configuration(target.name, configuration.name, 'CODE_SIGN_IDENTITY', '')
+                    project.set_target_configuration(target.name, configuration.name, 'PROVISIONING_PROFILE', '')
+                    project.set_target_configuration(target.name, configuration.name, 'CODE_SIGNING_REQUIRED', 'NO')
+                    project.set_target_configuration(target.name, configuration.name, 'CODE_SIGNING_ALLOWED', 'NO')
 
     if args.team or args.bundleprefix:
         print(f'Saving {project.xcodeproj}')
